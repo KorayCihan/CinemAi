@@ -1,0 +1,527 @@
+﻿@inject CinemAI.Services.ITmdbApiClient TmdbApi
+@{
+    var genres = await TmdbApi.GetGenresAsync();
+}
+<!DOCTYPE html>
+<html lang="tr" data-bs-theme="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CinemAI</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --gradient-start: #1a1a2e;
+            --gradient-end: #16213e;
+            --accent-color: #e94560;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.3) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, var(--accent-color), #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* kategoriler dropdown */
+        .nav-categories {
+            position: relative;
+        }
+
+        .nav-categories .dropdown-toggle {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-categories .dropdown-toggle:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-categories .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(30, 30, 50, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 8px 0;
+            min-width: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-categories:hover .dropdown-menu {
+            display: block;
+        }
+
+        .nav-categories .dropdown-item {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 16px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-categories .dropdown-item:hover {
+            background: rgba(233, 69, 96, 0.2);
+            color: white;
+        }
+
+        .movie-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(233, 69, 96, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .movie-card img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+        }
+
+        .movie-poster-link {
+            display: block;
+        }
+
+        .movie-card a img {
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card a:hover img {
+            transform: scale(1.05);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--accent-color), #ff6b6b);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+        }
+
+        .rating-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .rating-select:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recommendation-badge {
+            background: linear-gradient(45deg, var(--accent-color), #ff6b6b);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .recommendation-reasons {
+            margin-top: 8px;
+            font-size: 0.75rem;
+        }
+
+        .recommendation-reasons small {
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .recommendation-card {
+            position: relative;
+        }
+
+        .recommendation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), #ff6b6b, #ffd93d);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .badge {
+            font-weight: 500;
+        }
+
+        .search-results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(30, 30, 50, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            margin-top: 8px;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-result-item:hover {
+            background: rgba(233, 69, 96, 0.2);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-poster {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .search-result-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .added-movie {
+            border: 2px solid #28a745 !important;
+            animation: addedPulse 0.5s ease;
+        }
+
+        @@keyframes addedPulse {
+            0% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 500;
+            z-index: 9999;
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .toast-notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .movie-cart {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: rgba(30, 30, 50, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .cart-header {
+            background: linear-gradient(45deg, var(--accent-color), #ff6b6b);
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .cart-count {
+            margin-left: 8px;
+        }
+
+        .cart-body {
+            padding: 12px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .cart-items {
+            margin-bottom: 12px;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .cart-item-poster {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .cart-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cart-item-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .cart-rating {
+            padding: 2px 6px;
+            font-size: 0.75rem;
+        }
+
+        .cart-remove {
+            padding: 4px 8px;
+        }
+
+        .movie-selectable {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .movie-add-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 36px;
+            height: 36px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .movie-selectable:hover .movie-add-overlay {
+            opacity: 1;
+        }
+
+        .movie-selectable.in-cart {
+            border: 2px solid #28a745 !important;
+        }
+
+        .movie-selectable.in-cart .movie-add-overlay {
+            opacity: 1;
+            background: rgba(40, 167, 69, 0.9);
+        }
+
+        @@media (max-width: 576px) {
+            .movie-cart {
+                width: calc(100% - 40px);
+                left: 20px;
+                right: 20px;
+            }
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .lang-switcher form {
+            margin: 0;
+        }
+
+        .lang-switcher .btn {
+            border-radius: 0;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .lang-switcher .btn-primary {
+            background: linear-gradient(45deg, var(--accent-color), #ff6b6b);
+            color: white;
+        }
+
+        .lang-switcher .btn-outline-light {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .lang-switcher .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-film me-2"></i>CinemAI
+                </a>
+
+                <!-- kategoriler dropdown -->
+                <div class="nav-categories ms-4">
+                    <span class="dropdown-toggle">
+                        <i class="bi bi-grid me-1"></i>Kategoriler
+                    </span>
+                    <div class="dropdown-menu">
+                        @foreach (var genre in genres)
+                        {
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-genreId="@genre.Id">
+                                @genre.Name
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <!-- dil secici -->
+                <div class="ms-auto">
+                    <div class="lang-switcher" role="group">
+                        @{
+                            var currentLang = Context.Request.Cookies["UserLanguage"] ?? "tr-TR";
+                        }
+                        <form asp-controller="Language" asp-action="SetLanguage" method="post" class="d-inline">
+                            <input type="hidden" name="lang" value="tr-TR" />
+                            <button type="submit"
+                                class="btn @(currentLang == "tr-TR" ? "btn-primary" : "btn-outline-light")">TR</button>
+                        </form>
+                        <form asp-controller="Language" asp-action="SetLanguage" method="post" class="d-inline">
+                            <input type="hidden" name="lang" value="en-US" />
+                            <button type="submit"
+                                class="btn @(currentLang == "en-US" ? "btn-primary" : "btn-outline-light")">EN</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container py-5">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="mt-5 py-4" style="background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <a href="https://www.themoviedb.org/" target="_blank" rel="noopener" class="text-decoration-none">
+                        <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
+                            alt="TMDB Logo" style="height: 20px; opacity: 0.8;">
+                    </a>
+                    <p class="text-muted small mb-0 mt-2">
+                        This product uses the TMDB API but is not endorsed or certified by TMDB.
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="text-muted small mb-0">
+                        &copy; @DateTime.Now.Year CinemAI - Kişiselleştirilmiş Film Önerileri
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

@@ -1,0 +1,94 @@
+══════════════════════════════════════════════════════════
+  CinemAI - Kapsamlı Video Sunum Metni (7-8 Dakika)
+══════════════════════════════════════════════════════════
+
+[NOT: Giriş kısmını arkadaşınız yaptı. Şimdi teknik bölüme geçiyoruz.]
+
+══════════════════════════════════════════════════════════
+BÖLÜM 1: GİRİŞ VE GEÇİŞ
+Süre: ~30 saniye
+[Ekran: Slayt - Algoritma Başlığı veya Flowchart]
+══════════════════════════════════════════════════════════
+
+"Merhabalar, arkadaşım projenin amacını anlattı. Şimdi ise CinemAI'yi gerçekten akıllı yapan şeyleri, yani teknik detayları, sizlere anlatacağım.
+Büyük veri ya da karmaşık AI modelleri yerine, iyi tasarlanmış matematiksel algoritmalar ve OOP prensipleriyle nasıl hızlı ve tutarlı bir sistem kurduğumuzu göstereceğim."
+
+══════════════════════════════════════════════════════════
+BÖLÜM 2: ALGORİTMA VE ÇALIŞMA MANTIĞI (KISA KOD ÖRNEĞİ)
+Süre: ~2.5 dakika
+[Ekran: Slayt 1 (Akış Şeması) → kısa bir IDE gösterimi]
+══════════════════════════════════════════════════════════
+
+"Öneri sistemimiz, kullanıcının yüksek puan verdiği (4 ve üzeri) filmleri referans alıyor. Bu referans filmler üzerinden paralel olarak Tür, Yönetmen ve Oyuncu analizleri yapıyoruz.
+
+Şimdi kodu kısaca gösteriyorum:
+
+[Ekran: IDE → HomeController.cs]
+HomeController, bir trafik polisi gibi. Kullanıcıdan gelen istekleri alıyor, iş mantığını tutmuyor, sadece ilgili servislere yönlendiriyor.
+
+[Ekran: IDE → RecommendationEngine.cs]
+RecommendationEngine ise mutfak. Burada paralel veri çekme, algoritma çalıştırma ve puanlama gerçekleşiyor.
+
+Algoritma, aday filmleri Weighted Rating formülüyle puanlıyor ve:
+- Seri uyumu (+15)
+- Yönetmen uyumu (+10)
+gibi bonuslarla en uygun sonuçları kullanıcıya sunuyor."
+
+══════════════════════════════════════════════════════════
+BÖLÜM 3: VERİ YAPISI VE OOP YAKLAŞIMI
+Süre: ~2 dakika
+[Ekran: Slayt 2 - OOP Dörtlü Şeması (Inheritance, DI, Encapsulation, Polymorphism)]
+══════════════════════════════════════════════════════════
+
+"Mimariyi oluştururken OOP prensiplerini ön planda tuttuk. Slaytta gördüğünüz dört ana prensibi şöyle kullandık:
+
+1️⃣ **Inheritance (Kalıtım):** `Movie` temel sınıf, `MovieDetails` ondan türetiliyor. Böylece kod tekrarından kaçındık.
+2️⃣ **Encapsulation (Kapsülleme):** Hassas verileri gizli tutup, sadece kontrollü metodlarla dışarı açtık.
+3️⃣ **Dependency Injection (Bağımlılık Enjeksiyonu):** Controller, servislere doğrudan değil, arayüzler üzerinden bağlanıyor. Bu sayede test edilebilir ve gevşek bağlı bir yapı elde ettik.
+4️⃣ **Polymorphism (Çok Biçimlilik):** Tek bir `ITmdbService` arayüzü var, ama gerçek API, mock ya da cache servisi arkasında çalışabilir. Sistem hangisinin çalıştığını bilmez, sadece işini yapar.
+"
+
+══════════════════════════════════════════════════════════
+BÖLÜM 4: DEMO GÖSTERİMİ
+Süre: ~1.5 dakika
+[Ekran: Uygulama Tarayıcı Ekranı]
+══════════════════════════════════════════════════════════
+
+"Şimdi uygulamayı çalıştıralım.
+
+(İlk ekran) Ana sayfada popüler filmler listeleniyor.
+
+(Detay sayfası) Film detaylarını, oyuncuları ve videoları tek bir API çağrısı (`append_to_response`) ile çekiyoruz. Bu sayede üç ayrı sorgu yerine bir istek, %66 performans artışı demek.
+
+Kullanıcı birkaç film seçip ‘Önerileri Getir’ dediğinde, öneri kartlarında neden o filmi önerdiğimizi (Yönetmen eşleşmesi, tür benzerliği vb.) şeffaf bir şekilde gösteriyoruz."
+
+══════════════════════════════════════════════════════════
+BÖLÜM 5: SONUÇ VE KAZANIMLAR
+Süre: ~1 dakika
+[Ekran: Slayt 3 - Sonuç ve Kazanımlar]
+══════════════════════════════════════════════════════════
+
+"Projeyi tamamladığımızda elde ettiğimiz sonuçlar:
+- Büyük veri ya da karmaşık AI modellerine ihtiyaç duymadan, içerik‑bazlı filtreleme ve Weighted Rating ile hızlı, tutarlı bir öneri sistemi kurduk.
+
+Kazanımlarımız:
+- OOP prensiplerini gerçek bir projede uyguladık, özellikle DI sayesinde test edilebilir bir yapı elde ettik.
+- Front‑end ve Back‑end asenkron iletişimini (AJAX) deneyimledik.
+- Yazılımsal bir problemi analiz edip somut bir çözüme dönüştürme deneyimi kazandık.
+"
+
+══════════════════════════════════════════════════════════
+BÖLÜM 6: GELECEK ÇALIŞMALAR
+Süre: ~1 dakika
+[Ekran: Slayt 4 - Roadmap]
+══════════════════════════════════════════════════════════
+
+"Roadmap’imizde dört ana adım var:
+1️⃣ SQL tabanlı veritabanı ile kalıcı veri yönetimi.
+2️⃣ Kullanıcı giriş sistemi – kişisel profiller.
+3️⃣ Hibrit öneri sistemi – Collaborative Filtering ekleyerek önerileri daha da akıllı hâle getirme.
+4️⃣ Mobil uygulama – iOS ve Android destekli native deneyim.
+
+Dinlediğiniz için teşekkür ederim."
+
+══════════════════════════════════════════════════════════

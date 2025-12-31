@@ -1,0 +1,885 @@
+﻿@model CinemAI.Models.RatingViewModel
+@{
+    ViewData["Title"] = "Film Önerileri";
+}
+
+<style>
+    /* ═══════════════════════════════════════════════════════════════
+       CinemAI UI - Optimized Performance Version
+       ═══════════════════════════════════════════════════════════════ */
+
+    :root {
+        --accent: #e94560;
+        --accent-glow: rgba(233, 69, 96, 0.3);
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --card-border: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Hero */
+    .hero-section {
+        text-align: center;
+        padding: 1.5rem 0 2rem;
+        pointer-events: none;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-section * {
+        pointer-events: auto;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #fff, var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1rem;
+    }
+
+    /* Search - YENİ BASIT YAPI */
+    #searchContainer {
+        max-width: 600px;
+        margin: 0 auto 2rem;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 9999 !important;
+        pointer-events: auto !important;
+    }
+
+    #searchBox {
+        width: 100% !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 2px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        padding: 15px 20px !important;
+        color: #FFFFFF !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        outline: none !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        opacity: 1 !important;
+        text-indent: 0 !important;
+        transition: all 0.3s ease !important;
+        position: relative !important;
+        z-index: 10000 !important;
+        pointer-events: auto !important;
+    }
+
+    #searchBox:focus {
+        border-color: var(--accent) !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 0 20px rgba(233, 69, 96, 0.3) !important;
+    }
+
+    #searchBox::placeholder {
+        color: rgba(255, 255, 255, 0.4) !important;
+        -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
+    }
+
+
+    /* Section */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Movie Grid */
+    .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1.25rem;
+    }
+
+    /* Movie Card - OPTIMIZED */
+    .movie-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+        cursor: pointer;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-6px);
+        border-color: var(--accent);
+    }
+
+    .movie-card.in-cart {
+        border-color: #00d4aa;
+        box-shadow: 0 0 15px rgba(0, 212, 170, 0.3);
+    }
+
+    .poster-wrap {
+        position: relative;
+    }
+
+    .poster-wrap img {
+        width: 100%;
+        aspect-ratio: 2/3;
+        object-fit: cover;
+        display: block;
+    }
+
+    .rating-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .rating-badge i {
+        color: #ffc107;
+    }
+
+    /* Add Button - Bottom Right */
+    .add-btn {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        background: var(--accent);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s, background 0.2s;
+        z-index: 10;
+    }
+
+    .add-btn:hover {
+        transform: scale(1.1);
+        background: #ff6b6b;
+    }
+
+    .movie-card.in-cart .add-btn {
+        background: #00d4aa;
+    }
+
+    .movie-info {
+        padding: 0.75rem;
+    }
+
+    .movie-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+    }
+
+    .movie-year {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Recommendations - Horizontal Scroll */
+    .rec-section {
+        background: linear-gradient(180deg, rgba(233, 69, 96, 0.08) 0%, transparent 100%);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .tag {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .tag-genre {
+        background: rgba(233, 69, 96, 0.2);
+        color: #ff8a9b;
+    }
+
+    .tag-director {
+        background: rgba(0, 212, 170, 0.2);
+        color: #00d4aa;
+    }
+
+    .tag-actor {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .rec-scroll {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .rec-scroll::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .rec-scroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .rec-scroll::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 2px;
+    }
+
+    .rec-card {
+        flex: 0 0 160px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+
+    .rec-card:hover {
+        transform: scale(1.03);
+    }
+
+    .rec-card img {
+        width: 100%;
+        aspect-ratio: 2/3;
+        object-fit: cover;
+    }
+
+    .rec-card .info {
+        padding: 0.5rem;
+    }
+
+    .rec-card .title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .rec-card .meta {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .rec-card .reason {
+        background: rgba(233, 69, 96, 0.15);
+        padding: 6px 8px;
+        font-size: 0.7rem;
+        color: var(--accent);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Floating Cart */
+    .cart-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 340px;
+        background: rgba(20, 20, 40, 0.98);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        overflow: hidden;
+    }
+
+    .cart-header {
+        background: linear-gradient(135deg, var(--accent), #ff6b6b);
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .cart-header h5 {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .cart-count {
+        background: white;
+        color: var(--accent);
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .cart-body {
+        max-height: 350px;
+        overflow-y: auto;
+        display: none;
+    }
+
+    .cart-body.open {
+        display: block;
+    }
+
+    .cart-items {
+        padding: 12px;
+    }
+
+    .cart-item {
+        display: flex;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 8px;
+        margin-bottom: 8px;
+        align-items: center;
+    }
+
+    .cart-item img {
+        width: 40px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .cart-item-info {
+        flex: 1;
+    }
+
+    .cart-item-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 4px;
+    }
+
+    .cart-rating {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: white;
+        padding: 2px 6px;
+        font-size: 0.75rem;
+    }
+
+    .cart-remove {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .cart-remove:hover {
+        color: var(--accent);
+    }
+
+    .cart-footer {
+        padding: 12px;
+    }
+
+    .recommend-btn {
+        width: 100%;
+        background: linear-gradient(135deg, var(--accent), #ff6b6b);
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .recommend-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Toast */
+    .toast-msg {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(50px);
+        background: rgba(30, 30, 50, 0.95);
+        padding: 12px 20px;
+        border-radius: 10px;
+        color: white;
+        font-size: 0.9rem;
+        opacity: 0;
+        transition: all 0.3s;
+        z-index: 2000;
+    }
+
+    .toast-msg.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    /* Modal */
+    .modal-content {
+        background: rgba(20, 20, 40, 0.98) !important;
+        border: 1px solid var(--card-border) !important;
+        border-radius: 20px !important;
+    }
+
+    .rating-btns {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .rating-btns button {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid transparent;
+        border-radius: 10px;
+        padding: 10px 18px;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .rating-btns button:hover {
+        background: rgba(255, 193, 7, 0.2);
+        border-color: #ffc107;
+    }
+
+    @@media (max-width: 768px) {
+        .hero-title {
+            font-size: 1.8rem;
+        }
+
+        .movie-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .cart-widget {
+            width: calc(100% - 32px);
+            right: 16px;
+        }
+    }
+</style>
+
+<!-- Hero -->
+<div class="hero-section">
+    <h1 class="hero-title">🎬 CinemAI</h1>
+</div>
+
+<!-- Film Ara -->
+<div id="searchContainer">
+    <textarea id="searchBox" rows="1" placeholder="🔍"
+        style="resize: none; overflow: hidden;"></textarea>
+</div>
+
+<!-- Messages -->
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger mb-4">@ViewBag.Error</div>
+}
+@if (ViewBag.Warning != null)
+{
+    <div class="alert alert-warning mb-4">@ViewBag.Warning</div>
+}
+
+<!-- Recommendations -->
+@if (Model.HasRecommendations)
+{
+    <section class="rec-section">
+        <h2 class="section-title"><i class="bi bi-stars text-warning"></i> @(ViewBag.Translations?["Section.ForYou"] ?? "Recommended For You")</h2>
+
+        <div class="tags">
+            @foreach (var g in Model.FavoriteGenres.Take(3))
+            {
+                <span class="tag tag-genre">🎭 @g</span>
+            }
+            @foreach (var d in Model.FavoriteDirectors.Take(2))
+            {
+                <span class="tag tag-director">🎬 @d</span>
+            }
+            @foreach (var a in Model.FavoriteActors.Take(2))
+            {
+                <span class="tag tag-actor">⭐ @a</span>
+            }
+        </div>
+
+        <div class="rec-scroll">
+            @foreach (var rec in Model.RecommendedMovies)
+            {
+                <a href="@Url.Action("Details", "Home", new { id = rec.Movie.Id })" target="_blank"
+                    class="rec-card text-decoration-none text-white">
+                    <img src="@rec.Movie.GetPosterUrl()" alt="@rec.Movie.Title" loading="lazy">
+                    <div class="info">
+                        <div class="title" title="@rec.Movie.Title">@rec.Movie.Title</div>
+                        <div class="meta">
+                            <i class="bi bi-star-fill text-warning"></i> @rec.Movie.VoteAverage.ToString("F1")
+                            <span class="text-success ms-1">↑@rec.Score.ToString("F1")</span>
+                        </div>
+                    </div>
+                    @if (rec.Reasons.Any())
+                    {
+                        <div class="reason">@rec.Reasons.First()</div>
+                    }
+                </a>
+            }
+        </div>
+    </section>
+}
+
+<!-- Search Results -->
+<section id="searchResults" class="d-none mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="section-title mb-0"><i class="bi bi-search"></i> @(ViewBag.Translations?["Search.Results"] ?? "Search Results")</h2>
+        <button class="btn btn-outline-light btn-sm" onclick="clearSearch()" style="border-radius: 8px;">
+            <i class="bi bi-arrow-left me-1"></i> @(ViewBag.Language == "en-US" ? "Back" : "Geri")
+        </button>
+    </div>
+    <div id="searchGrid" class="movie-grid"></div>
+</section>
+
+<!-- Popular Movies -->
+<section id="popularSection">
+    <h2 class="section-title"><i class="bi bi-fire text-danger"></i> @(ViewBag.Translations?["Section.Popular"] ??
+        "Popular Movies")</h2>
+    <div id="popularGrid" class="movie-grid">
+        @if (Model.Movies?.Any() == true)
+        {
+            @foreach (var m in Model.Movies)
+            {
+                <div class="movie-card" data-id="@m.Id" data-title="@m.Title" data-poster="@m.GetPosterUrl()"
+                    data-rating="@m.VoteAverage">
+                    <div class="poster-wrap">
+                        <a href="@Url.Action("Details", "Home", new { id = m.Id })">
+                            <img src="@m.GetPosterUrl()" alt="@m.Title" loading="lazy">
+                        </a>
+                        <div class="rating-badge"><i class="bi bi-star-fill"></i> @m.VoteAverage.ToString("F1")</div>
+                        <button class="add-btn"
+                            onclick="event.preventDefault(); event.stopPropagation(); addMovie(this.closest('.movie-card'))">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-title" title="@m.Title">@m.Title</div>
+                        <div class="movie-year">@m.GetYear()</div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</section>
+
+<!-- Cart Widget -->
+<div class="cart-widget">
+    <div class="cart-header" onclick="toggleCart()">
+        <h5><i class="bi bi-film"></i> @(ViewBag.Translations?["Cart.Title"] ?? "My Movie List")</h5>
+        <div class="d-flex align-items-center gap-2">
+            <div class="cart-count">0</div>
+            <i class="bi bi-chevron-up toggle-icon"></i>
+        </div>
+    </div>
+    <div class="cart-body" id="cartBody">
+        <div class="cart-items" id="cartItems">
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                @(ViewBag.Translations?["Cart.Empty"] ?? "No movies added yet")
+            </div>
+        </div>
+        <div class="cart-footer">
+            <form asp-action="Recommend" method="post" id="recForm">
+                @Html.AntiForgeryToken()
+                <div id="hiddenInputs"></div>
+                <button type="submit" class="recommend-btn" id="recBtn" disabled>
+                    <i class="bi bi-magic"></i> @(ViewBag.Translations?["Cart.GetRecommendations"] ?? "Get Recommendations")
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Rating Modal -->
+<div class="modal fade" id="ratingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">@(ViewBag.Translations?["Rating.Title"] ?? "Rate")</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalPoster" src="" class="rounded mb-3" style="width:100px; height:150px; object-fit:cover;">
+                <h6 id="modalTitle" class="mb-3"></h6>
+                <div class="rating-btns">
+                    <button onclick="confirmAdd(1)">⭐1</button>
+                    <button onclick="confirmAdd(2)">⭐2</button>
+                    <button onclick="confirmAdd(3)">⭐3</button>
+                    <button onclick="confirmAdd(4)">⭐4</button>
+                    <button onclick="confirmAdd(5)">⭐5</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cart = JSON.parse(localStorage.getItem('movieCart') || '{}');
+    let cartOpen = Object.keys(cart).length > 0;
+    let pending = null;
+    let modal = null;
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        modal = new bootstrap.Modal(document.getElementById('ratingModal'));
+        renderCart();
+        updateCards();
+        if (cartOpen) document.getElementById('cartBody').classList.add('open');
+    });
+
+    // Search - YENİ YAPI
+    const searchBox = document.getElementById('searchBox');
+    let searchTimer;
+
+    if (searchBox) {
+        // Keyboard events - CAPTURE PHASE
+        searchBox.addEventListener('keydown', function (e) {
+            e.stopPropagation();
+            console.log('Key:', e.key);
+        }, true);
+
+        // Input event
+        searchBox.addEventListener('input', function (e) {
+            e.stopPropagation();
+            clearTimeout(searchTimer);
+            const q = this.value.trim();
+
+            console.log('Search input:', q); // Debug için
+
+            if (q.length < 2) {
+                clearSearch();
+                return;
+            }
+
+            searchTimer = setTimeout(() => doSearch(q), 500);
+        });
+
+        // Focus event - çalışıyor mu test için
+        searchBox.addEventListener('focus', function () {
+            console.log('Search box focused!');
+            this.style.borderColor = 'var(--accent)';
+        });
+
+        searchBox.addEventListener('blur', function () {
+            this.style.borderColor = '#E94560';
+        });
+
+        // ENTER tuşu ile arama
+        searchBox.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const q = this.value.trim();
+                if (q.length >= 2) {
+                    console.log('Enter pressed, searching:', q);
+                    doSearch(q);
+                }
+            }
+        });
+    }
+
+    async function doSearch(q) {
+        document.getElementById('searchResults').classList.remove('d-none');
+        document.getElementById('popularSection').classList.add('d-none');
+        document.getElementById('searchGrid').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+
+        try {
+            const res = await fetch(`/Home/Search?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            if (data.success && data.movies.length) {
+                const movies = data.movies.filter(m => m.posterUrl && !m.posterUrl.includes('null'));
+                document.getElementById('searchGrid').innerHTML = movies.map(m => movieHTML(m)).join('');
+            } else {
+                document.getElementById('searchGrid').innerHTML = '<div class="text-center text-muted py-4">Sonuç bulunamadı</div>';
+            }
+        } catch (e) {
+            document.getElementById('searchGrid').innerHTML = '<div class="text-center text-danger py-4">Hata oluştu</div>';
+        }
+    }
+
+    function clearSearch() {
+        // searchBox.value = ''; // BU SATIRI KALDIRDIM - ilk harfleri yiyordu!
+        document.getElementById('searchResults').classList.add('d-none');
+        document.getElementById('popularSection').classList.remove('d-none');
+    }
+
+    function movieHTML(m) {
+        const inCart = cart[m.id] !== undefined;
+        return `
+        <div class="movie-card ${inCart ? 'in-cart' : ''}" data-id="${m.id}" data-title="${esc(m.title)}" data-poster="${m.posterUrl}" data-rating="${m.voteAverage}">
+            <div class="poster-wrap">
+                <a href="/Home/Details/${m.id}">
+                    <img src="${m.posterUrl}" alt="${esc(m.title)}" loading="lazy">
+                </a>
+                <div class="rating-badge"><i class="bi bi-star-fill"></i> ${m.voteAverage.toFixed(1)}</div>
+                <button class="add-btn" onclick="event.preventDefault(); event.stopPropagation(); addMovie(this.closest('.movie-card'))">
+                    <i class="bi ${inCart ? 'bi-check' : 'bi-plus'}"></i>
+                </button>
+            </div>
+            <div class="movie-info">
+                <div class="movie-title">${esc(m.title)}</div>
+                <div class="movie-year">${m.releaseDate?.substring(0, 4) || ''}</div>
+            </div>
+        </div>
+    `;
+    }
+
+    // Cart
+    function addMovie(el) {
+        const id = el.dataset.id;
+        if (cart[id]) {
+            delete cart[id];
+            el.classList.remove('in-cart');
+            el.querySelector('.add-btn i').className = 'bi bi-plus';
+            toast(`@(ViewBag.Language == "en-US" ? "Removed" : "Çıkarıldı")`);
+            renderCart();
+        } else {
+            pending = { el, id, title: el.dataset.title, poster: el.dataset.poster, rating: el.dataset.rating };
+            document.getElementById('modalPoster').src = pending.poster;
+            document.getElementById('modalTitle').textContent = pending.title;
+            modal.show();
+        }
+    }
+
+    function confirmAdd(r) {
+        if (!pending) return;
+        cart[pending.id] = { id: pending.id, title: pending.title, poster: pending.poster, userRating: r };
+        pending.el.classList.add('in-cart');
+        pending.el.querySelector('.add-btn i').className = 'bi bi-check';
+        toast(`${pending.title} ⭐${r} eklendi`);
+        modal.hide();
+        pending = null;
+        renderCart();
+        if (!cartOpen) toggleCart();
+    }
+
+    function removeItem(id) {
+        delete cart[id];
+        renderCart();
+        updateCards();
+    }
+
+    function updateRating(id, r) {
+        if (cart[id]) cart[id].userRating = parseInt(r);
+        updateHidden();
+    }
+
+    function renderCart() {
+        const items = document.getElementById('cartItems');
+        const count = document.querySelector('.cart-count');
+        const btn = document.getElementById('recBtn');
+        const ids = Object.keys(cart);
+
+        count.textContent = ids.length;
+
+        if (!ids.length) {
+            items.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-inbox fs-3 d-block mb-2"></i>@ViewBag.Translations["Cart.Empty"]</div>';
+            btn.disabled = true;
+        } else {
+            items.innerHTML = ids.map(id => {
+                const m = cart[id];
+                return `
+                <div class="cart-item">
+                    <img src="${m.poster}">
+                    <div class="cart-item-info">
+                        <div class="cart-item-title">${m.title}</div>
+                        <select class="cart-rating" onchange="updateRating('${id}', this.value)">
+                            ${[1, 2, 3, 4, 5].map(r => `<option value="${r}" ${m.userRating == r ? 'selected' : ''}>⭐${r}</option>`).join('')}
+                        </select>
+                    </div>
+                    <button class="cart-remove" onclick="removeItem('${id}')"><i class="bi bi-x-lg"></i></button>
+                </div>
+            `;
+            }).join('');
+            btn.disabled = false;
+        }
+
+        localStorage.setItem('movieCart', JSON.stringify(cart));
+        updateHidden();
+    }
+
+    function updateHidden() {
+        document.getElementById('hiddenInputs').innerHTML = Object.keys(cart).map(id =>
+            `<input type="hidden" name="ratings[${id}]" value="${cart[id].userRating}">`
+        ).join('');
+    }
+
+    function toggleCart() {
+        cartOpen = !cartOpen;
+        document.getElementById('cartBody').classList.toggle('open', cartOpen);
+        document.querySelector('.toggle-icon').className = `bi bi-chevron-${cartOpen ? 'down' : 'up'} toggle-icon`;
+    }
+
+    function updateCards() {
+        document.querySelectorAll('.movie-card').forEach(c => {
+            const id = c.dataset.id;
+            const btn = c.querySelector('.add-btn i');
+            if (cart[id]) {
+                c.classList.add('in-cart');
+                if (btn) btn.className = 'bi bi-check';
+            } else {
+                c.classList.remove('in-cart');
+                if (btn) btn.className = 'bi bi-plus';
+            }
+        });
+    }
+
+    // Utils
+    function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    function toast(msg) {
+        document.querySelectorAll('.toast-msg').forEach(t => t.remove());
+        const t = document.createElement('div');
+        t.className = 'toast-msg';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.classList.add('show'), 10);
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2000);
+    }
+
+    // Form loading
+    document.getElementById('recForm').addEventListener('submit', function () {
+        document.getElementById('recBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Yükleniyor...';
+        document.getElementById('recBtn').disabled = true;
+    });
+
+    // Sync tabs
+    window.addEventListener('storage', e => {
+        if (e.key === 'movieCart') { cart = JSON.parse(e.newValue || '{}'); renderCart(); updateCards(); }
+    });
+</script>

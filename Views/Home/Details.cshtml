@@ -1,0 +1,570 @@
+@model CinemAI.Models.MovieDetails
+@{
+    ViewData["Title"] = Model.Title;
+    var backdropUrl = Model.GetBackdropUrl();
+}
+
+<style>
+    /* Backdrop arka plan */
+    .movie-backdrop {
+        position: relative;
+        min-height: 450px;
+        background-size: cover;
+        background-position: center top;
+        margin: -20px -15px 0;
+        padding: 40px 30px;
+    }
+
+    .movie-backdrop::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom,
+                rgba(17, 17, 27, 0.7) 0%,
+                rgba(17, 17, 27, 0.9) 60%,
+                rgba(17, 17, 27, 1) 100%);
+    }
+
+    .movie-backdrop .content {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Poster */
+    .movie-poster {
+        width: 100%;
+        max-width: 300px;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Film bilgileri */
+    .movie-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .movie-tagline {
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    .movie-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .movie-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .movie-meta-item i {
+        color: var(--accent-color);
+    }
+
+    .movie-genres {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .genre-tag {
+        background: rgba(233, 69, 96, 0.2);
+        border: 1px solid var(--accent-color);
+        color: var(--accent-color);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+
+    .movie-overview {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 700px;
+    }
+
+    /* Aksiyonlar */
+    .movie-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .btn-trailer {
+        background: linear-gradient(45deg, #ff0000, #cc0000);
+        border: none;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-add-list {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-list:hover {
+        background: rgba(40, 167, 69, 0.2);
+        border-color: #28a745;
+        color: #28a745;
+    }
+
+    /* Kadro bölümü */
+    .cast-section {
+        margin-top: 40px;
+    }
+
+    .cast-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 20px;
+    }
+
+    .cast-card {
+        text-align: center;
+    }
+
+    .cast-photo {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cast-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+    }
+
+    .cast-character {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+    }
+
+    /* Bilgi kartları */
+    .info-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+
+    .info-card h5 {
+        color: var(--accent-color);
+        margin-bottom: 15px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .info-value {
+        font-weight: 500;
+    }
+
+    /* Modal */
+    .trailer-modal .modal-content {
+        background: #11111b;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .trailer-modal .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .trailer-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+    }
+
+    .trailer-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Geri butonu */
+    .back-btn {
+        position: fixed;
+        top: 15px;
+        left: 70px;
+        /* TR/EN butonlarının toplamı kadar (yaklaşık 100-120px) */
+        z-index: 1050;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+        background: rgba(233, 69, 96, 0.9);
+        border-color: rgba(233, 69, 96, 0.5);
+        color: white;
+        transform: translateX(-2px);
+    }
+
+    @@media (max-width: 768px) {
+        .movie-backdrop {
+            min-height: auto;
+            padding: 20px 15px;
+        }
+
+        .movie-poster {
+            max-width: 200px;
+            margin: 0 auto 20px;
+        }
+
+        .movie-title {
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .movie-meta {
+            justify-content: center;
+        }
+
+        .movie-genres {
+            justify-content: center;
+        }
+
+        .movie-overview {
+            text-align: center;
+        }
+
+        .movie-actions {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    }
+</style>
+
+<!-- Geri Butonu -->
+<button type="button" class="back-btn" onclick="history.back()">
+    <i class="bi bi-arrow-left"></i> @(ViewBag.Translations?["Details.Back"] ?? "Back")
+</button>
+
+<!-- Film Backdrop ve Ana Bilgiler -->
+<div class="movie-backdrop"
+    style="@(string.IsNullOrEmpty(backdropUrl) ? "" : $"background-image: url('{backdropUrl}')")">
+    <div class="content">
+        <div class="row">
+            <!-- Poster -->
+            <div class="col-md-4 col-lg-3 text-center mb-4 mb-md-0">
+                <img src="@Model.GetPosterUrl()" alt="@Model.Title" class="movie-poster">
+            </div>
+
+            <!-- Bilgiler -->
+            <div class="col-md-8 col-lg-9">
+                <h1 class="movie-title">@Model.Title</h1>
+
+                @if (!string.IsNullOrEmpty(Model.Tagline))
+                {
+                    <p class="movie-tagline">"@Model.Tagline"</p>
+                }
+
+                <div class="movie-meta">
+                    <span class="movie-meta-item">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <strong>@Model.VoteAverage.ToString("F1")</strong>
+                        <span class="text-muted">(@Model.VoteCount.ToString("N0")
+                            @(ViewBag.Translations?["Details.Votes"] ?? "votes"))</span>
+                    </span>
+                    <span class="movie-meta-item">
+                        <i class="bi bi-calendar"></i>
+                        @Model.GetYear()
+                    </span>
+                    <span class="movie-meta-item">
+                        <i class="bi bi-clock"></i>
+                        @Model.GetFormattedRuntime()
+                    </span>
+                </div>
+
+                <div class="movie-genres">
+                    @foreach (var genre in Model.Genres)
+                    {
+                        <span class="genre-tag">@genre.Name</span>
+                    }
+                </div>
+
+                <p class="movie-overview">@Model.Overview</p>
+
+                <div class="movie-actions">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-add-list dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-plus-lg"></i> @(ViewBag.Translations?["Details.AddToList"] ?? "Add to List")
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="addToListFromDetails(@Model.Id, '@Model.Title.Replace("'", "\\'").Replace("\"", "&quot;")', '@Model.GetPosterUrl()', @Model.VoteAverage.ToString("F1", System.Globalization.CultureInfo.InvariantCulture), 5)">⭐⭐⭐⭐⭐
+                                    @(ViewBag.Translations?["Rating.Excellent"] ?? "Excellent") (5)</a></li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="addToListFromDetails(@Model.Id, '@Model.Title.Replace("'", "\\'").Replace("\"", "&quot;")', '@Model.GetPosterUrl()', @Model.VoteAverage.ToString("F1", System.Globalization.CultureInfo.InvariantCulture), 4)">⭐⭐⭐⭐
+                                    @(ViewBag.Translations?["Rating.Good"] ?? "Good") (4)</a></li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="addToListFromDetails(@Model.Id, '@Model.Title.Replace("'", "\\'").Replace("\"", "&quot;")', '@Model.GetPosterUrl()', @Model.VoteAverage.ToString("F1", System.Globalization.CultureInfo.InvariantCulture), 3)">⭐⭐⭐
+                                    @(ViewBag.Translations?["Rating.Average"] ?? "Average") (3)</a></li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="addToListFromDetails(@Model.Id, '@Model.Title.Replace("'", "\\'").Replace("\"", "&quot;")', '@Model.GetPosterUrl()', @Model.VoteAverage.ToString("F1", System.Globalization.CultureInfo.InvariantCulture), 2)">⭐⭐
+                                    @(ViewBag.Translations?["Rating.Poor"] ?? "Poor") (2)</a></li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="addToListFromDetails(@Model.Id, '@Model.Title.Replace("'", "\\'").Replace("\"", "&quot;")', '@Model.GetPosterUrl()', @Model.VoteAverage.ToString("F1", System.Globalization.CultureInfo.InvariantCulture), 1)">⭐
+                                    @(ViewBag.Translations?["Rating.Bad"] ?? "Bad") (1)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kadro -->
+@if (Model.GetTopCast().Any())
+{
+    <section class="cast-section">
+        <h4 class="mb-4"><i class="bi bi-people-fill text-warning"></i> @(ViewBag.Translations?["Details.Cast"] ?? "Cast")
+        </h4>
+        <div class="cast-grid">
+            @foreach (var actor in Model.GetTopCast(8))
+            {
+                var photoUrl = string.IsNullOrEmpty(actor.ProfilePath)
+                ? "https://via.placeholder.com/100x100?text=?"
+                : $"/images{actor.ProfilePath}";
+                <div class="cast-card">
+                    <img src="@photoUrl" alt="@actor.Name" class="cast-photo">
+                    <div class="cast-name">@actor.Name</div>
+                    <div class="cast-character">@actor.Character</div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- Ek Bilgiler -->
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <div class="info-card">
+            <h5><i class="bi bi-info-circle me-2"></i>@(ViewBag.Translations?["Details.MovieInfo"] ?? "Movie Info")</h5>
+            <div class="info-row">
+                <span class="info-label">@(ViewBag.Translations?["Details.OriginalTitle"] ?? "Original Title")</span>
+                <span class="info-value">@Model.OriginalTitle</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">@(ViewBag.Translations?["Details.Director"] ?? "Director")</span>
+                <span class="info-value">@(Model.GetDirector() == "Bilinmiyor" ?
+                    (ViewBag.Translations?["Details.Unknown"] ?? "Unknown") : Model.GetDirector())</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">@(ViewBag.Translations?["Details.ReleaseDate"] ?? "Release Date")</span>
+                <span class="info-value">@(string.IsNullOrEmpty(Model.ReleaseDate) ?
+                    (ViewBag.Translations?["Details.Unknown"] ?? "Unknown") :
+                    DateTime.Parse(Model.ReleaseDate).ToString("dd MMMM yyyy", new
+                    System.Globalization.CultureInfo(ViewBag.Language == "en-US" ? "en-US" : "tr-TR")))</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">@(ViewBag.Translations?["Details.Status"] ?? "Status")</span>
+                <span class="info-value">@(Model.Status == "Released" ? (ViewBag.Translations?["Details.StatusReleased"]
+                    ?? "Released") : Model.Status)</span>
+            </div>
+            @if (Model.ProductionCompanies.Any())
+            {
+                <div class="info-row">
+                    <span class="info-label">@(ViewBag.Translations?["Details.Producer"] ?? "Producer")</span>
+                    <span class="info-value">@Model.ProductionCompanies.First().Name</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Floating Cart Widget (same as main page) -->
+<div id="movieCart" class="movie-cart">
+    <div class="cart-header" onclick="toggleCart()">
+        <span><i class="bi bi-film"></i> @(ViewBag.Translations?["Details.MyList"] ?? "My List")</span>
+        <span class="cart-count badge bg-danger">0</span>
+        <i class="bi bi-chevron-up cart-toggle-icon"></i>
+    </div>
+    <div class="cart-body">
+        <div id="cartItems" class="cart-items">
+            <div class="cart-empty text-center text-muted py-3">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                @(ViewBag.Translations?["Cart.Empty"] ?? "No movies added yet")
+            </div>
+        </div>
+        <a href="/" class="btn btn-primary w-100">
+            <i class="bi bi-magic"></i> @(ViewBag.Translations?["Details.GoToHome"] ?? "Go to Home")
+        </a>
+    </div>
+</div>
+
+<script>
+    // Cart state from localStorage
+    let cart = JSON.parse(localStorage.getItem('movieCart') || '{}');
+    let isCartOpen = Object.keys(cart).length > 0;
+    // Listeye ekle - now accepts userRating parameter
+    function addToListFromDetails(id, title, poster, imdbRating, userRating) {
+        if (cart[id]) {
+            showToast(`"${title}" @(ViewBag.Translations?["Details.AlreadyInList"] ?? "already in list!")`);
+            return false;
+        }
+
+        cart[id] = {
+            id: id,
+            title: title,
+            poster: poster,
+            imdbRating: imdbRating,
+            userRating: userRating
+        };
+
+        localStorage.setItem('movieCart', JSON.stringify(cart));
+        renderCart(); // Update cart display
+
+        // Open cart if closed
+        if (!isCartOpen) {
+            toggleCart();
+        }
+
+        showToast(`"${title}" ${userRating}⭐ @(ViewBag.Translations?["Details.AddedWith"] ?? "added with")`);
+        return false; // Prevent default link behavior
+    }
+
+    function removeFromCart(movieId) {
+        delete cart[movieId];
+        localStorage.setItem('movieCart', JSON.stringify(cart));
+        renderCart();
+    }
+
+    function renderCart() {
+        const cartItems = document.getElementById('cartItems');
+        const cartCount = document.querySelector('.cart-count');
+
+        const movieIds = Object.keys(cart);
+        cartCount.textContent = movieIds.length;
+
+        if (movieIds.length === 0) {
+            cartItems.innerHTML = `
+                <div class="cart-empty text-center text-muted py-3">
+                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+    @(ViewBag.Translations?["Cart.Empty"] ?? "No movies added yet")
+                </div>
+            `;
+        } else {
+            let html = '';
+            movieIds.forEach(id => {
+                const movie = cart[id];
+                html += `
+                    <div class="cart-item">
+                        <img src="${movie.poster}" alt="${movie.title}" class="cart-item-poster">
+                        <div class="cart-item-info">
+                            <div class="cart-item-title" title="${movie.title}">${movie.title}</div>
+                            <small class="text-warning">${'⭐'.repeat(movie.userRating)}</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger cart-remove" onclick="removeFromCart('${id}')">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            cartItems.innerHTML = html;
+        }
+
+        // Save to localStorage
+        localStorage.setItem('movieCart', JSON.stringify(cart));
+    }
+
+    function toggleCart() {
+        const cartBody = document.querySelector('.cart-body');
+        const toggleIcon = document.querySelector('.cart-toggle-icon');
+
+        isCartOpen = !isCartOpen;
+
+        if (isCartOpen) {
+            cartBody.style.display = 'block';
+            toggleIcon.style.transform = 'rotate(0deg)';
+        } else {
+            cartBody.style.display = 'none';
+            toggleIcon.style.transform = 'rotate(180deg)';
+        }
+    }
+
+    function showToast(message) {
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(t => t.remove());
+
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 2000);
+    }
+
+    // Initialize cart on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        renderCart();
+
+        // Set initial cart state
+        const cartBody = document.querySelector('.cart-body');
+        const toggleIcon = document.querySelector('.cart-toggle-icon');
+
+        if (isCartOpen) {
+            cartBody.style.display = 'block';
+            toggleIcon.style.transform = 'rotate(0deg)';
+        } else {
+            cartBody.style.display = 'none';
+            toggleIcon.style.transform = 'rotate(180deg)';
+        }
+    });
+</script>

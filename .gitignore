@@ -1,0 +1,22 @@
+# Dependencies
+bin/
+obj/
+*.dll
+*.exe
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Build
+publish/
+out/
+
+# Logs
+*.log
+logs/
+
+# Secrets (if any)
+appsettings.*.local.json
